@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:14
+    env_file:
+      - .env
+    volumes:
+      - ./.docker/postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+  rabbitmq:
+    image: rabbitmq:3.8.11
+    env_file: .env
+    restart: unless-stopped
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    command: >
+      bash -c "cd backend &&
+      poetry run python manage.py makemigrations &&
+      poetry run python manage.py migrate &&
+      poetry run python manage.py load_timezones &&
+      poetry run python manage.py test &&
+      poetry run python manage.py runserver 0.0.0.0:${DJANGO_PORT:-8000}
+      "
+    volumes:
+      - .:/code/
+    ports:
+      - "${DOCKER_EXPOSE_PORT:-8000}:${DJANGO_PORT:-8000}"
+    depends_on:
+      - db
+  dramatiq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+      - rabbitmq
+    volumes:
+      - .:/code/
+    restart: unless-stopped
+    env_file: .env
+    command: >
+      bash -c "cd backend && 
+      poetry run python manage.py rundramatiq"
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+      - rabbitmq
+      - web
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./app.log:/code/app.log
+    command: >
+      bash -c " cd backend && 
+      poetry run python manage.py run_scheduler"

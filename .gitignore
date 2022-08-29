@@ -1,0 +1,12 @@
+__pycache__/
+.env
+data/
+.idea/
+.docker/
+static/
+app.log
+.app.log/
+config.yaml
+**/migrations/**
+!**/migrations
+!**/migrations/__init__.py

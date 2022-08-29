@@ -1,0 +1,9 @@
+debug: True
+local_timezone: 'Europe/Moscow'
+django_secret_key: 'django-insecure-ot3u#_##mrhn_6!$$umz1a=@-_ydd0viwqm8rv%7%@92)e&#6h'
+django_static_url: '/django-static/'
+django_allowed_hosts:
+  - '*'
+mailing_service:
+  token: 'XXXX'
+  base_url: 'https://probe.fbrq.cloud/v1'
